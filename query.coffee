@@ -39,9 +39,13 @@ face_group.search(
     console.log "================ Post messages ===================="
     console.log ''
     for hit in res.hits.hits
+      console.log '==='
       console.log moment(hit._source.created_time).format('MMMM Do YYYY, h:mm:ss a')
       console.log hit._source.message
       console.log ''
+      if hit._source.comments
+        for comment in hit._source.comments.data
+          console.log comment.from.name, ': ', comment.message
     #console.log util.inspect res.hits.hits[0], depth: 10
     #console.log util.inspect res, depth: 10
 )
