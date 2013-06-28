@@ -5,10 +5,12 @@ Export and make searchable your Facebook group
 
 ## Installation
 
-Install Coffeescript:   
+Install Coffeescript:
+
      npm install -g coffee-script
 
-Install node modules for project:   
+Install node modules for project:
+
      npm install
 
 Get OAuth token from Facebook and add to fetch_posts.coffee. Simplest way I've found is from
