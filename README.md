@@ -21,7 +21,7 @@ Setup Elasticsearch locally
 ## Do intial fetch / indexing of Facebook group posts
 Run ````coffee fetch_posts.coffee````
 
-As long as you leave the program, it'll fetch new posts/comments every
+As long as you leave the program running, it'll fetch new posts/comments every
 30 minutes.
 
 ## Run queries.
