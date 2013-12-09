@@ -49,7 +49,29 @@ requestComments = (post, callback) ->
       requestComments(post, callback)
     else
       console.log "#{post.id} finally has #{post.comments.data.length} comments"
-      callback(null)
+      requestCommentLikes(post, callback)
+
+requestCommentLikes = (post, callback) -> # no pagination for likes
+  tasks = []
+  for comment in post.comments.data
+    if comment.like_count
+      do (comment) ->
+        tasks.push((callback) -> requestCommentLike(post.id, comment, callback))
+
+  console.log "fetching likes for #{tasks.length} comments"
+  async.series tasks, (err) ->
+    if err
+      console.log "error in fetching comment: #{inspect err}"
+      return
+    callback(null)
+
+requestCommentLike = (post_id, comment, callback) ->
+  get "https://graph.facebook.com/#{post_id}_#{comment.id}/likes?access_token=#{accessToken}", (error, response, body) ->
+    if response.error
+      console.log inspect response.error
+      return
+    comment.likes = JSON.parse(body.toString()).data
+    callback(null)
 
 requestPost = (id) ->
   get "#{FB}/#{id}?access_token=#{accessToken}", (error, response, body) ->
