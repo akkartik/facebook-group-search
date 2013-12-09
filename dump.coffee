@@ -44,12 +44,12 @@ requestComments = (post, callback) ->
     if response.error
       callback(response.error)
       return
-    if response.data.length
-      post.comments.data = post.comments.data.concat(response.data)
-      requestComments(post, callback)
-    else
+    if empty(response.data)
       console.log "#{post.id} finally has #{post.comments.data.length} comments"
       callback(null)
+      return
+    post.comments.data = post.comments.data.concat(response.data)
+    requestComments(post, callback)
 
 requestPost = (id) ->
   get "#{FB}/#{id}?access_token=#{accessToken}", (error, response, body) ->
@@ -70,6 +70,9 @@ inspect = (x) ->
 get = (url, callback) ->
   console.log "requesting #{url}"
   request(url, callback)
+
+empty = (x) ->
+  !x || x.length == 0
 
 skip = false
 args = process.argv[2..]
