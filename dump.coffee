@@ -10,8 +10,7 @@ FB = "https://graph.facebook.com"
 accessToken = ""
 
 requestPosts = (url) ->
-  console.log "requesting #{url}"
-  request url, (error, response, body) ->
+  get url, (error, response, body) ->
     response = JSON.parse body.toString()
     if response.error
       console.log inspect response
@@ -40,9 +39,8 @@ requestPosts = (url) ->
         requestPosts(response.paging.next)
 
 requestComments = (post, id, n, callback) ->
-  console.log "comments for #{id}: #{n}"
   # couldn't get other pagination methods (next, after) to work.
-  request "#{FB}/#{id}/comments?access_token=#{accessToken}&offset=#{n}", (error, response, body) ->
+  get "#{FB}/#{id}/comments?access_token=#{accessToken}&offset=#{n}", (error, response, body) ->
     response = JSON.parse body.toString()
     if response.error
       callback(response.error)
@@ -54,7 +52,7 @@ requestComments = (post, id, n, callback) ->
       callback(null)
 
 requestPost = (id) ->
-  request "#{FB}/#{id}?access_token=#{accessToken}", (error, response, body) ->
+  get "#{FB}/#{id}?access_token=#{accessToken}", (error, response, body) ->
     response = JSON.parse body.toString()
     if response.error
       console.log inspect response
@@ -70,6 +68,10 @@ wait = (n, callback) ->
 
 inspect = (x) ->
   require('util').inspect(x, {depth: null})
+
+get = (url, callback) ->
+  console.log "requesting #{url}"
+  request(url, callback)
 
 skip = false
 args = process.argv[2..]
