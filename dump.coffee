@@ -21,7 +21,7 @@ requestPosts = (url) ->
       if post.comments
         console.log "before: #{post.id} #{post.comments.data.length}"
         do (post) ->
-          tasks.push((callback) -> requestComments(post, post.id, post.comments.data.length, callback))
+          tasks.push((callback) -> requestComments(post, callback))
 
     console.log "fetching comments for #{tasks.length} posts"
     async.series tasks, (err) ->
@@ -38,16 +38,16 @@ requestPosts = (url) ->
         console.log 'fetching more posts', response.paging.next
         requestPosts(response.paging.next)
 
-requestComments = (post, id, n, callback) ->
+requestComments = (post, callback) ->
   # couldn't get other pagination methods (next, after) to work.
-  get "#{FB}/#{id}/comments?access_token=#{accessToken}&offset=#{n}", (error, response, body) ->
+  get "#{FB}/#{post.id}/comments?access_token=#{accessToken}&offset=#{post.comments.data.length}", (error, response, body) ->
     response = JSON.parse body.toString()
     if response.error
       callback(response.error)
       return
     if response.data.length
       post.comments.data = post.comments.data.concat(response.data)
-      requestComments(post, id, n+response.data.length, callback)
+      requestComments(post, callback)
     else
       callback(null)
 
@@ -59,7 +59,7 @@ requestPost = (id) ->
       return
 
     console.log "Initially #{response.comments.data.length} comments"
-    requestComments response, response.id, response.comments.data.length, (err) ->
+    requestComments response, (err) ->
       console.log "#{response.comments.data.length} comments"
       console.log inspect response
 
