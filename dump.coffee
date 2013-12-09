@@ -61,15 +61,15 @@ requestPost = (id) ->
     requestComments response, (err) ->
       console.log inspect response
 
+get = (url, callback) ->
+  console.log "requesting #{url}"
+  request(url, callback)
+
 wait = (n, callback) ->
   setTimeout(callback, n)
 
 inspect = (x) ->
   require('util').inspect(x, {depth: null})
-
-get = (url, callback) ->
-  console.log "requesting #{url}"
-  request(url, callback)
 
 empty = (x) ->
   !x || x.length == 0
