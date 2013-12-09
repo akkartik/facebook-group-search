@@ -19,7 +19,6 @@ requestPosts = (url) ->
     tasks = []
     for post in response.data
       if post.comments
-        console.log "before: #{post.id} #{post.comments.data.length}"
         do (post) ->
           tasks.push((callback) -> requestComments(post, callback))
 
@@ -49,6 +48,7 @@ requestComments = (post, callback) ->
       post.comments.data = post.comments.data.concat(response.data)
       requestComments(post, callback)
     else
+      console.log "#{post.id} finally has #{post.comments.data.length} comments"
       callback(null)
 
 requestPost = (id) ->
@@ -58,9 +58,7 @@ requestPost = (id) ->
       console.log inspect response
       return
 
-    console.log "Initially #{response.comments.data.length} comments"
     requestComments response, (err) ->
-      console.log "#{response.comments.data.length} comments"
       console.log inspect response
 
 wait = (n, callback) ->
