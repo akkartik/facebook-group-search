@@ -41,7 +41,8 @@ requestPosts = (url) ->
           do (post) ->
             tasks.push((callback) -> requestComments(post, callback))
     catch error
-      console.log response
+      console.log "== Error 2 in requestPosts:"
+      console.log inspect response
 
     console.log "fetching comments for #{tasks.length} posts"
     async.series tasks, (err) ->
@@ -150,7 +151,7 @@ wait = (n, callback) ->
   setTimeout(callback, n)
 
 inspect = (x) ->
-  require('util').inspect(x, {depth: null})
+  JSON.stringify x, null, 2 # spaces per indent
 
 empty = (x) ->
   !x || x.length == 0
