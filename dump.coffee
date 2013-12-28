@@ -1,6 +1,10 @@
-# Dump a person or group's feed to stdout in JSON.
+# Like fetch_posts.coffee, but:
+#   a) simply dumps JSON to stdout, without going through or needing elastic_search
+#   b) is a little more thorough, grabbing all comments of each story, and likes for each comment
+
+# Dump a person or group's feed:
 #   $ coffee dump.coffee --token <access token> <person or group id>
-# Optionally dump a single object to stdout, including all its comments
+# Optionally dump a single object, including all its comments:
 #   $ coffee dump.coffee --token <access token> --post <post id>
 
 # If the crawl takes longer than the hour or so your debug token is valid for,
