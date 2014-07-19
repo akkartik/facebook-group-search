@@ -7,7 +7,8 @@
 # Optionally dump a single object, including all its comments:
 #   $ coffee dump.coffee --token <access token> --post <post id>
 
-# If the crawl takes longer than the hour or so your debug token is valid for,
+# The readme describes how to get a disposable token.
+# If the crawl takes longer than the hour or so your token is valid for,
 # you'll need to:
 #   a) Create a facebook app id and secret
 #   b) Extend the debug token as described in https://developers.facebook.com/docs/facebook-login/access-tokens:
