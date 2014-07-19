@@ -1,6 +1,6 @@
 # Like fetch_posts.coffee, but:
-#   a) simply dumps JSON to stdout, without going through or needing elastic_search
-#   b) is a little more thorough, grabbing all comments of each story, and likes for each comment
+#   a) simply dumps JSON for each post to a separate file
+#   b) is a little more thorough, grabbing all comments of each story, and all likes for each story and comment
 
 # Dump a person or group's feed:
 #   $ coffee dump.coffee --token <access token> <person or group id>
@@ -17,6 +17,7 @@
 
 async = require 'async'
 request = require 'request'
+fs = require 'fs'
 
 FB = "https://graph.facebook.com"
 accessToken = ""
@@ -43,9 +44,9 @@ requestPosts = (url) ->
             tasks.push((callback) -> requestComments(post, callback))
     catch error
       console.log "== Error 2 in requestPosts:"
+      console.log inspect error
       console.log inspect response
 
-    console.log "fetching comments for #{tasks.length} posts"
     async.series tasks, (err) ->
       if err
         console.log "== Error in fetching all posts:"
@@ -59,9 +60,7 @@ requestPosts = (url) ->
 
       try
         for post in response.data
-          if post.comments
-            console.log "after: #{post.id} #{post.comments.data.length}"
-          console.log inspect post
+          save post
 
         if response.paging?.next?
           console.log 'fetching more posts', response.paging.next
@@ -90,7 +89,6 @@ requestComments = (post, callback) ->
       post.comments.data = post.comments.data.concat(response.data)
       requestComments(post, callback)
     else
-      console.log "#{post.id} finally has #{post.comments.data.length} comments"
       requestCommentLikes(post, callback)
 
 requestCommentLikes = (post, callback) -> # no pagination for likes
@@ -100,7 +98,7 @@ requestCommentLikes = (post, callback) -> # no pagination for likes
       do (comment) ->
         tasks.push((callback) -> requestCommentLike(post.id, comment, callback))
 
-  console.log "fetching likes for #{tasks.length} comments"
+  console.log "#{post.updated_time}: fetching likes for #{tasks.length} comments"
   async.series tasks, (err) ->
     if err
       console.log "== Error in fetching comment likes"
@@ -144,8 +142,15 @@ requestPost = (id) ->
     requestComments response, (err) ->
       console.log inspect response
 
+save = (post) ->
+  fs.open "data/#{post.created_time.slice(0, -5).replace('T', '_').replace(/[:-]/g, '')}-#{post.from.name.replace(/\s/g, '_')}", 'w', (err, fd) ->
+    if err
+      console.log "error in save"
+      console.log inspect err
+      return
+    fs.write fd, inspect post
+
 get = (url, callback) ->
-  console.log "requesting #{url}"
   request(url, callback)
 
 wait = (n, callback) ->
