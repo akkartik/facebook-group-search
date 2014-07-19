@@ -174,4 +174,4 @@ for arg, i in args
     get args[i+1], (error, response, body) ->
       console.log body.toString()
   else
-    requestPosts("#{FB}/#{arg}/feed?limit=500&access_token=#{accessToken}")
+    requestPosts("#{FB}/#{arg}/feed?limit=100&access_token=#{accessToken}")
