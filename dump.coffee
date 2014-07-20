@@ -21,14 +21,15 @@ fs = require 'fs'
 
 FB = "https://graph.facebook.com"
 accessToken = ""
+dir = null
 
-requestPosts = (url) ->
+requestPosts = (url, dir) ->
   get url, (error, response, body) ->
     try
       response = JSON.parse body.toString()
     catch error
       console.log "== Crap response. Retrying"
-      requestPosts(url)
+      requestPosts(url, dir)
       return
 
     if response.error
@@ -55,20 +56,20 @@ requestPosts = (url) ->
 
       if !response
         console.log "== No response when fetching comments for posts; retrying"
-        requestPosts(url)
+        requestPosts(url, dir)
         return
 
       try
         for post in response.data
-          save post
+          save post, dir
 
         if response.paging?.next?
           console.log 'fetching more posts', response.paging.next
-          requestPosts(response.paging.next)
+          requestPosts(response.paging.next, dir)
       catch error
         console.log "== Error in reading posts; retrying"
         console.log inspect error
-        requestPosts(url)
+        requestPosts(url, dir)
         return
 
 requestComments = (post, callback) ->
@@ -142,8 +143,8 @@ requestPost = (id) ->
     requestComments response, (err) ->
       console.log inspect response
 
-save = (post) ->
-  fs.open "data/#{post.created_time.slice(0, -5).replace('T', '_').replace(/[:-]/g, '')}-#{post.from.name.replace(/\s/g, '_')}", 'w', (err, fd) ->
+save = (post, dir) ->
+  fs.open "#{dir}/#{post.created_time.slice(0, -5).replace('T', '_').replace(/[:-]/g, '')}-#{post.from.name.replace(/\s/g, '_')}", 'w', (err, fd) ->
     if err
       console.log "error in save"
       console.log inspect err
@@ -171,6 +172,9 @@ for arg, i in args
   if arg == "--token"
     skip = true
     accessToken = args[i+1]
+  else if arg == "--dir"
+    skip = true
+    dir = args[i+1]
   else if arg == "--post"
     skip = true
     requestPost args[i+1]
@@ -179,4 +183,12 @@ for arg, i in args
     get args[i+1], (error, response, body) ->
       console.log body.toString()
   else
-    requestPosts("#{FB}/#{arg}/feed?limit=100&access_token=#{accessToken}")
+    if !dir
+      console.log "--dir required"
+      process.exit(1)
+    try
+      fs.mkdirSync(dir, 0o755)
+    catch e
+      if e.code != 'EEXIST'
+        throw e
+    requestPosts("#{FB}/#{arg}/feed?limit=100&access_token=#{accessToken}", dir)
