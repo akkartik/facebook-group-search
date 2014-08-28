@@ -18,6 +18,7 @@
 async = require 'async'
 request = require 'request'
 fs = require 'fs'
+moment = require 'moment'
 
 FB = "https://graph.facebook.com"
 accessToken = ""
@@ -38,8 +39,10 @@ requestPosts = (url, dir) ->
       return
 
     tasks = []
+    oldest_update = ""
     try
       for post in response.data
+        oldest_update = moment(post.updated_time)
         if post.comments
           do (post) ->
             tasks.push((callback) -> requestComments(post, callback))
@@ -63,14 +66,18 @@ requestPosts = (url, dir) ->
         for post in response.data
           save post, dir
 
-        if response.paging?.next?
-          console.log 'fetching more posts', response.paging.next
-          requestPosts(response.paging.next, dir)
+        if response.data.length > 0
+          new_url = newUrl(url, oldest_update.unix())
+          console.log 'fetching more posts', new_url
+          requestPosts(new_url, dir)
       catch error
         console.log "== Error in reading posts; retrying"
         console.log inspect error
         requestPosts(url, dir)
         return
+
+newUrl = (url, update_time) ->
+  url.replace(/&until=.*/, "")+"&until=#{update_time}"
 
 requestComments = (post, callback) ->
   # couldn't get other pagination methods (next, after) to work.
