@@ -42,6 +42,10 @@ requestPosts = (url, dir) ->
     oldest_update = ""
     try
       for post in response.data
+        if !post.link and post.caption
+          console.log post.actions[0].link
+          console.log "link: #{post.link}"
+          console.log "caption: #{post.caption}"
         oldest_update = moment(post.updated_time)
         if post.comments
           do (post) ->
@@ -50,6 +54,11 @@ requestPosts = (url, dir) ->
       console.log "== Error 2 in requestPosts:"
       console.log inspect error
       console.log inspect response
+
+#?     if response.data.length > 0
+#?       new_url = newUrl(url, oldest_update.unix())
+#?       console.log 'fetching more posts', new_url
+#?       requestPosts(new_url, dir)
 
     async.series tasks, (err) ->
       if err
