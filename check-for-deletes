@@ -1,0 +1,1 @@
+git diff |grep "^[^ ]" |perl -pwe 's/^([^d][^ ]*) .*/$1/' |uniq -c |grep -v "^+" |grep -v "^[^d].* [12]$\|@@" |grep -B1 "^- " |grep "^diff " |column 3 |perl -pwe 's,^a/,,' |xargs git diff
