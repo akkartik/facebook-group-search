@@ -18,7 +18,7 @@ https://developers.facebook.com/tools/explorer?method=GET&path=338164739567715%2
 
 Setup Elasticsearch locally
 
-## Do intial fetch / indexing of Facebook group posts
+## Do initial fetch / indexing of Facebook group posts
 Run ````coffee fetch_posts.coffee````
 
 As long as you leave the program running, it'll fetch new posts/comments every
