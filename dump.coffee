@@ -115,4 +115,4 @@ for arg, i in args
     catch e
       if e.code != 'EEXIST'
         throw e
-    requestPosts("#{FB}/#{arg}/feed?fields=id,from,created_time,updated_time,message,likes,comments{id,from,created_time,message,like_count,likes,comments{id,from,message,like_count,likes}}&access_token=#{accessToken}", dir)
+    requestPosts("#{FB}/#{arg}/feed?fields=id,from,created_time,updated_time,message,likes,attachments,story,comments{id,from,created_time,message,like_count,likes,comments{id,from,message,like_count,likes}}&access_token=#{accessToken}", dir)
