@@ -1,3 +1,8 @@
+*This fork of https://github.com/KyleAMathews/facebook-group-search adds a
+script called `dump.coffee` which skips elasticsearch and writes its output to
+a directory on disk, one file per post. For search use `grep`. Original Readme
+from upstream below:*
+
 facebook-group-search
 =====================
 
@@ -18,7 +23,7 @@ https://developers.facebook.com/tools/explorer?method=GET&path=338164739567715%2
 
 Setup Elasticsearch locally
 
-## Do intial fetch / indexing of Facebook group posts
+## Do initial fetch / indexing of Facebook group posts
 Run ````coffee fetch_posts.coffee````
 
 As long as you leave the program, it'll fetch new posts/comments every
