@@ -38,115 +38,20 @@ requestPosts = (url, dir) ->
       console.log inspect response
       return
 
-    tasks = []
-    oldest_update = ""
+    if response.data.length > 0
+      new_url = response.paging.next
+      console.log 'fetching more posts', new_url
+      requestPosts(new_url, dir)
+
     try
       for post in response.data
-        if !post.link and post.caption
-          console.log post.actions[0].link
-          console.log "link: #{post.link}"
-          console.log "caption: #{post.caption}"
-        oldest_update = moment(post.updated_time)
-        if post.comments
-          do (post) ->
-            tasks.push((callback) -> requestComments(post, callback))
+        save post, dir
+
     catch error
-      console.log "== Error 2 in requestPosts:"
+      console.log "== Error in reading posts; retrying"
       console.log inspect error
-      console.log inspect response
-
-#?     if response.data.length > 0
-#?       new_url = newUrl(url, oldest_update.unix())
-#?       console.log 'fetching more posts', new_url
-#?       requestPosts(new_url, dir)
-
-    async.series tasks, (err) ->
-      if err
-        console.log "== Error in fetching all posts:"
-        console.log inspect err
-        return
-
-      if !response
-        console.log "== No response when fetching comments for posts; retrying"
-        requestPosts(url, dir)
-        return
-
-      try
-        for post in response.data
-          save post, dir
-
-        if response.data.length > 0
-          new_url = newUrl(url, oldest_update.unix())
-          console.log 'fetching more posts', new_url
-          requestPosts(new_url, dir)
-      catch error
-        console.log "== Error in reading posts; retrying"
-        console.log inspect error
-        requestPosts(url, dir)
-        return
-
-newUrl = (url, update_time) ->
-  url.replace(/&until=.*/, "")+"&until=#{update_time}"
-
-requestComments = (post, callback) ->
-  # couldn't get other pagination methods (next, after) to work.
-  get "#{FB}/#{post.id}/comments?access_token=#{accessToken}&offset=#{post.comments.data.length}", (error, response, body) ->
-    try
-      response = JSON.parse body.toString()
-    catch error
-      console.log "== Crap response. Retrying"
-      requestComments(post, callback)
+      requestPosts(url, dir)
       return
-    if response.error
-      console.log "== Error in fetching comments"
-      console.log inspect error
-      callback(response.error)
-      return
-    if response.data.length
-      post.comments.data = post.comments.data.concat(response.data)
-      requestComments(post, callback)
-    else
-      requestCommentLikes(post, callback)
-
-requestCommentLikes = (post, callback) -> # no pagination for likes
-  tasks = []
-  for comment in post.comments.data
-    if comment.like_count
-      do (comment) ->
-        tasks.push((callback) -> requestCommentLike(post.id, comment, callback))
-
-  console.log "#{post.updated_time}: fetching likes for #{tasks.length} comments"
-  async.series tasks, (err) ->
-    if err
-      console.log "== Error in fetching comment likes"
-      console.log inspect err
-      return
-    callback(null)
-
-requestCommentLike = (post_id, comment, callback) ->
-  get "https://graph.facebook.com/#{post_id}_#{comment.id}/likes?access_token=#{accessToken}", (error, response, body) ->
-    if error
-      console.log "== Error in fetching comment like; retrying"  # timeout
-      console.log inspect error
-      requestCommentLike(post_id, comment, callback)
-      return
-    if !response
-      console.log "== No response; retrying"
-      requestCommentLike(post_id, comment, callback)
-      return
-    if response.error
-      console.log "== Error in fetching comment like:"
-      console.log inspect response
-      return
-
-    try
-      comment.likes = JSON.parse(body.toString()).data
-    catch error
-      console.log "== Crap response. Retrying"
-      requestCommentLike(post_id, comment, callback)
-      return
-
-    callback(null)
 
 requestPost = (id) ->
   get "#{FB}/#{id}?access_token=#{accessToken}", (error, response, body) ->
@@ -160,6 +65,9 @@ requestPost = (id) ->
       console.log inspect response
 
 save = (post, dir) ->
+  if post.from == undefined
+    post.from = {}
+    post.from.name = "BANNED"
   fs.open "#{dir}/#{post.created_time.slice(0, -5).replace('T', '_').replace(/[:-]/g, '')}-#{post.from.name.replace(/\s/g, '_')}", 'w', (err, fd) ->
     if err
       console.log "error in save"
@@ -207,4 +115,4 @@ for arg, i in args
     catch e
       if e.code != 'EEXIST'
         throw e
-    requestPosts("#{FB}/#{arg}/feed?limit=100&access_token=#{accessToken}", dir)
+    requestPosts("#{FB}/#{arg}/feed?fields=id,from,created_time,updated_time,message,likes,comments{id,from,created_time,message,like_count,likes,comments{id,from,message,like_count,likes}}&access_token=#{accessToken}", dir)
