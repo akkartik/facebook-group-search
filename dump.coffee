@@ -90,7 +90,7 @@ newUrl = (url, update_time) ->
 
 requestComments = (post, callback) ->
   # couldn't get other pagination methods (next, after) to work.
-  get "#{FB}/#{post.id}/comments?access_token=#{accessToken}&offset=#{post.comments.data.length}", (error, response, body) ->
+  get "#{FB}/v2.3/#{post.id}/comments?access_token=#{accessToken}&offset=#{post.comments.data.length}", (error, response, body) ->
     try
       response = JSON.parse body.toString()
     catch error
@@ -124,7 +124,7 @@ requestCommentLikes = (post, callback) -> # no pagination for likes
     callback(null)
 
 requestCommentLike = (post_id, comment, callback) ->
-  get "https://graph.facebook.com/#{post_id}_#{comment.id}/likes?access_token=#{accessToken}", (error, response, body) ->
+  get "#{FB}/v2.3/#{post_id}_#{comment.id}/likes?access_token=#{accessToken}", (error, response, body) ->
     if error
       console.log "== Error in fetching comment like; retrying"  # timeout
       console.log inspect error
@@ -149,7 +149,7 @@ requestCommentLike = (post_id, comment, callback) ->
     callback(null)
 
 requestPost = (id) ->
-  get "#{FB}/#{id}?access_token=#{accessToken}", (error, response, body) ->
+  get "#{FB}/v2.3/#{id}?access_token=#{accessToken}", (error, response, body) ->
     response = JSON.parse body.toString()
     if response.error
       console.log "== Error in fetching post:"
@@ -207,4 +207,4 @@ for arg, i in args
     catch e
       if e.code != 'EEXIST'
         throw e
-    requestPosts("#{FB}/#{arg}/feed?limit=100&access_token=#{accessToken}", dir)
+    requestPosts("#{FB}/v2.3/#{arg}/feed?limit=100&access_token=#{accessToken}", dir)
