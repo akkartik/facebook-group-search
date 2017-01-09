@@ -1,33 +1,43 @@
-*This fork of https://github.com/KyleAMathews/facebook-group-search adds a
-script called `dump.coffee` which skips elasticsearch and writes its output to
-a directory on disk, one file per post. For search use `grep`. Original Readme
-from upstream below:*
-
 facebook-group-search
 =====================
 
-Export and make searchable your Facebook group
+Export your Facebook group to a file system.
 
-## Installation
+1. Install Coffeescript:
 
-Install Coffeescript:
+```
+npm install -g coffee-script
+```
 
-     npm install -g coffee-script
+2. Install node modules for project:
 
-Install node modules for project:
+```
+npm install
+```
 
-     npm install
-
-Get OAuth token from Facebook and add to fetch_posts.coffee. Simplest way I've found is from
+3. Get OAuth token from Facebook and add to fetch_posts.coffee. Simplest way I've found is from
 https://developers.facebook.com/tools/explorer?method=GET&path=338164739567715%2Ffeed
 
-Setup Elasticsearch locally
+4. Create an output directory:
 
-## Do initial fetch / indexing of Facebook group posts
-Run ````coffee fetch_posts.coffee````
+```
+mkdir output
+```
 
-As long as you leave the program, it'll fetch new posts/comments every
-30 minutes.
+5. Start crawling:
 
-## Run queries.
-    coffee query.coffee # all additional parameters become the search query.
+```
+coffee dump.coffee --token [oauth token from Facebook] --dir output [facebook id for your group]
+```
+
+If you find your credential expires before you're done crawling, run this
+command at the start to create a longer-lived oauth token:
+
+```bash
+APP_ID=...
+APP_SECRET=...
+OAUTH_TOKEN=...  # your short-lived token
+coffee dump.coffee --extend "https://graph.facebook.com/oauth/access_token?client_id=$APP_ID&client_secret=$APP_SECRET&grant_type=fb_exchange_token&fb_exchange_token=$OAUTH_TOKEN"
+```
+
+It should print out a long-lived oauth token you can use instead.

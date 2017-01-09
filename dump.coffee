@@ -42,6 +42,8 @@ requestPosts = (url, dir) ->
     oldest_update = ""
     try
       for post in response.data
+        if post.id == '338164739567715_1291749154209264'
+          continue
         if !post.link and post.caption
           console.log post.actions[0].link
           console.log "link: #{post.link}"
@@ -100,6 +102,8 @@ requestComments = (post, callback) ->
     if response.error
       console.log "== Error in fetching comments"
       console.log inspect error
+      console.log "== for post"
+      console.log inspect post
       callback(response.error)
       return
     if response.data.length
