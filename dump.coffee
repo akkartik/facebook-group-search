@@ -12,7 +12,7 @@
 # you'll need to:
 #   a) Create a facebook app id and secret
 #   b) Extend the debug token as described in https://developers.facebook.com/docs/facebook-login/access-tokens:
-#       $ coffee dump.coffee --extend "https://graph.facebook.com/oauth/access_token?client_id=$APP_ID&client_secret=$SECRET&grant_type=fb_exchange_token&fb_exchange_token=$TOKEN"
+#       $ coffee dump.coffee --extend $APP_ID $SECRET $TOKEN
 #   c) Use the new access token as before.
 
 async = require 'async'
@@ -190,21 +190,23 @@ skip = false
 args = process.argv[2..]
 for arg, i in args
   if skip
-    skip = false
+    skip -= 1
     continue
   if arg == "--token"
-    skip = true
     accessToken = args[i+1]
+    skip = 1
   else if arg == "--dir"
-    skip = true
     dir = args[i+1]
+    skip = 1
   else if arg == "--post"
-    skip = true
+    skip = 1
     requestPost args[i+1]
   else if arg == "--extend"
-    skip = true
-    get args[i+1], (error, response, body) ->
+    console.log "#{FB}/oauth/access_token?client_id=#{args[i+1]}&client_secret=#{args[i+2]}&grant_type=fb_exchange_token&fb_exchange_token=#{args[i+3]}"
+    get "#{FB}/oauth/access_token?client_id=#{args[i+1]}&client_secret=#{args[i+2]}&grant_type=fb_exchange_token&fb_exchange_token=#{args[i+3]}", (error, response, body) ->
       console.log body.toString()
+      process.exit(0)
+    skip = 3
   else
     if !dir
       console.log "--dir required"
